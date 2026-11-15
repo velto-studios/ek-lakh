@@ -1,0 +1,14 @@
+# dependencies
+node_modules
+
+# build output
+.next
+out
+
+# local environment
+.env*
+
+# system and tooling
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
