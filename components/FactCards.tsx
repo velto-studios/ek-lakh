@@ -2,65 +2,16 @@
 
 import { useInView } from "motion/react";
 import * as m from "motion/react-m";
-import { useCallback, useEffect, useRef, type PointerEvent } from "react";
+import { Fragment, useEffect, useRef, type PointerEvent } from "react";
 
 import { CountUp } from "@/components/CountUp";
 import { FactArt } from "@/components/FactArt";
-import { factCards, timeUnits, type FactCard } from "@/lib/content";
-import { pad2, splitDuration } from "@/lib/format";
-import { useCountTween } from "@/lib/hooks";
+import { scoreSeparator, statCards, type StatCard } from "@/lib/content";
+import { pad2 } from "@/lib/format";
 
 const MAX_TILT = 3.5;
 
-/** Seconds counting up, shown as hours, minutes and seconds. */
-function DurationCount({ seconds, start }: { seconds: number; start: boolean }) {
-  const hoursRef = useRef<HTMLSpanElement>(null);
-  const minutesRef = useRef<HTMLSpanElement>(null);
-  const secondsRef = useRef<HTMLSpanElement>(null);
-  const final = splitDuration(seconds);
-
-  const onFrame = useCallback((value: number) => {
-    const parts = splitDuration(value);
-    if (hoursRef.current) hoursRef.current.textContent = String(parts.hours);
-    if (minutesRef.current) minutesRef.current.textContent = pad2(parts.minutes);
-    if (secondsRef.current) secondsRef.current.textContent = pad2(parts.seconds);
-  }, []);
-  useCountTween(seconds, onFrame, { duration: 2200, start });
-
-  const digits = "numeral text-[clamp(2.1rem,1.5rem+2vw,2.9rem)] font-bold leading-none";
-  const unit = "text-[1rem] font-medium text-steel";
-
-  return (
-    <>
-      <span className="sr-only">
-        {final.hours} {timeUnits.hours} {final.minutes} {timeUnits.minutes} {final.seconds}{" "}
-        {timeUnits.seconds}
-      </span>
-      <span aria-hidden="true" className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="inline-flex items-baseline gap-1.5">
-          <span ref={hoursRef} className={digits}>
-            {final.hours}
-          </span>
-          <span className={unit}>{timeUnits.hours}</span>
-        </span>
-        <span className="inline-flex items-baseline gap-1.5">
-          <span ref={minutesRef} className={digits}>
-            {pad2(final.minutes)}
-          </span>
-          <span className={unit}>{timeUnits.minutes}</span>
-        </span>
-        <span className="inline-flex items-baseline gap-1.5">
-          <span ref={secondsRef} className={digits}>
-            {pad2(final.seconds)}
-          </span>
-          <span className={unit}>{timeUnits.seconds}</span>
-        </span>
-      </span>
-    </>
-  );
-}
-
-function FactCardView({ card, index }: { card: FactCard; index: number }) {
+function StatCardView({ card, index }: { card: StatCard; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const frame = useRef(0);
   const inView = useInView(cardRef, { once: true, amount: 0.35 });
@@ -108,57 +59,31 @@ function FactCardView({ card, index }: { card: FactCard; index: number }) {
         className="tilt panel flex h-full flex-col p-6 sm:p-7"
       >
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="numeral text-[0.72rem] font-medium tracking-[0.12em] text-dim">
-              {pad2(index + 1)}
-            </span>
-            <h4 className="text-[1.05rem] font-bold text-steel">{card.title}</h4>
-          </div>
+          <span className="numeral text-[0.72rem] font-medium tracking-[0.12em] text-dim">
+            {pad2(index + 1)}
+          </span>
           <div className="h-24 shrink-0 sm:h-28">
-            <FactArt kind={card.kind} />
+            <FactArt kind={card.kind} values={card.values} />
           </div>
         </div>
 
-        <p className="mt-6 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-          {card.kind === "time" ? (
-            <DurationCount seconds={card.value} start={inView} />
-          ) : (
-            <>
-              {card.prefix ? (
-                <span className="text-[1rem] font-medium text-steel">{card.prefix}</span>
-              ) : null}
-              <span className="numeral text-[clamp(2.6rem,1.8rem+2.6vw,3.6rem)] font-bold leading-none">
-                <CountUp value={card.value} start={inView} duration={1800} />
-                {card.suffix}
-              </span>
-              {card.unit ? (
-                <span className="text-[1.15rem] font-medium text-steel">{card.unit}</span>
-              ) : null}
-            </>
-          )}
-        </p>
-        {card.note ? <p className="mt-1.5 text-[0.98rem] text-steel">{card.note}</p> : null}
-
-        <p className="mt-4 text-[1.05rem] leading-relaxed text-white">{card.line}</p>
-
-        {card.extra ? (
-          <dl className="mt-4 grid gap-2 border-t border-line pt-4 text-[0.95rem]">
-            {card.extra.map((row) => (
-              <div key={row.label} className="flex flex-wrap justify-between gap-x-4">
-                <dt className="text-dim">{row.label}</dt>
-                <dd className="font-medium text-white">{row.value}</dd>
-              </div>
+        {/* The number and what it counts sit on separate lines, so a running count never reflows the card. */}
+        <h4 className="mt-6">
+          <span className="numeral block whitespace-nowrap text-[clamp(2.6rem,1.8rem+2.6vw,3.6rem)] font-bold leading-none">
+            {card.values.map((value, position) => (
+              <Fragment key={position}>
+                {position > 0 ? <span className="text-dim"> {scoreSeparator} </span> : null}
+                <CountUp value={value} from={card.from} start={inView} duration={1800} />
+              </Fragment>
             ))}
-          </dl>
-        ) : null}
+          </span>
+          <span className="mt-2 block text-[1.15rem] font-medium text-steel">{card.title}</span>
+        </h4>
 
-        <div className="mt-auto pt-6">
-          {card.basis.map((line) => (
-            <p key={line} className="text-[0.86rem] leading-relaxed text-dim">
-              {line}
-            </p>
-          ))}
-        </div>
+        {card.quote ? (
+          <p className="mt-3 text-[1.08rem] font-bold leading-snug text-butter">{card.quote}</p>
+        ) : null}
+        <p className="mt-3 text-[1.05rem] leading-relaxed text-white">{card.line}</p>
       </div>
     </m.li>
   );
@@ -167,8 +92,8 @@ function FactCardView({ card, index }: { card: FactCard; index: number }) {
 export function FactCards() {
   return (
     <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-      {factCards.map((card, index) => (
-        <FactCardView key={card.kind} card={card} index={index} />
+      {statCards.map((card, index) => (
+        <StatCardView key={card.kind} card={card} index={index} />
       ))}
     </ul>
   );

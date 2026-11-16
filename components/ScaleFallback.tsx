@@ -1,38 +1,44 @@
-import { PITCH, blockSide, pitchTiling } from "@/lib/scale";
+import { BUTTER, CRIMSON, INK } from "@/components/Characters";
+import { COATS, buildCatLayout } from "@/lib/scale";
 
 interface ScaleFallbackProps {
   count: number;
-  spacing: number;
+  dotOn: boolean;
   label: string;
   note: string;
 }
 
 const VIEW_W = 420;
 const VIEW_H = 300;
-const PAD = 26;
+const CENTRE_X = VIEW_W / 2;
+const CENTRE_Y = VIEW_H / 2;
+/** Up to this many cats are drawn one by one; beyond it the crowd becomes a textured block. */
+const DRAWN_CATS = 100;
+const DOT_SIZE = 12;
+const DOT_X = 372;
+
+// The same first hundred cats, in the same places and coats, as the 3D scene shows.
+const layout = buildCatLayout(DRAWN_CATS);
+const nearCats = Array.from({ length: DRAWN_CATS }, (_, index) => {
+  const channel = (offset: number) => Math.round(layout.colors[index * 3 + offset] * 255);
+  return {
+    x: layout.positions[index * 3],
+    y: layout.positions[index * 3 + 2],
+    fill: `rgb(${channel(0)} ${channel(1)} ${channel(2)})`,
+  };
+});
 
 /**
- * Static, to-scale plan view used when WebGL is unavailable: the pitches the
- * crowd needs, with the crowd drawn as a dotted square on top.
+ * Static plan view used when WebGL is unavailable: Peelu in the middle with
+ * the cats around him and, once the red dot is out, the whole crowd bunched
+ * up behind it at the edge. A sketch of the idea, not drawn to scale.
  */
-export function ScaleFallback({ count, spacing, label, note }: ScaleFallbackProps) {
-  const side = blockSide(count, spacing);
-  const { cols, rows } = pitchTiling(side);
-  const sheetW = cols * PITCH.length;
-  const sheetH = rows * PITCH.width;
-  const unit = Math.min((VIEW_W - PAD * 2) / sheetW, (VIEW_H - PAD * 2) / sheetH);
-  const originX = (VIEW_W - sheetW * unit) / 2;
-  const originY = (VIEW_H - sheetH * unit) / 2;
-  const blockPx = Math.max(side * unit, 3);
-
-  const pitches: { x: number; y: number }[] = [];
-  for (let col = 0; col < cols; col += 1) {
-    for (let row = 0; row < rows; row += 1) {
-      pitches.push({ x: originX + col * PITCH.length * unit, y: originY + row * PITCH.width * unit });
-    }
-  }
-  const pitchW = PITCH.length * unit;
-  const pitchH = PITCH.width * unit;
+export function ScaleFallback({ count, dotOn, label, note }: ScaleFallbackProps) {
+  const individual = count <= DRAWN_CATS;
+  // Few cats are drawn large; a big crowd is a block whose side grows with the count.
+  const cell = count <= 5 ? 26 : 13;
+  const side = 60 + 38 * (Math.log10(Math.max(count, 1)) - 2);
+  const texture = count > 10_000 ? 0.62 : 1;
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-5">
@@ -43,35 +49,65 @@ export function ScaleFallback({ count, spacing, label, note }: ScaleFallbackProp
         className="h-auto max-h-[78%] w-full max-w-[36rem]"
       >
         <defs>
-          <pattern id="fallback-crowd" width="3" height="3" patternUnits="userSpaceOnUse">
-            <circle cx="1.5" cy="1.5" r="0.85" fill="#F6EAD8" />
+          <pattern
+            id="fallback-cats"
+            width="8"
+            height="8"
+            patternUnits="userSpaceOnUse"
+            patternTransform={`scale(${texture})`}
+          >
+            {COATS.slice(0, 4).map((coat, index) => (
+              <circle
+                key={coat.key}
+                cx={2 + (index % 2) * 4}
+                cy={2 + Math.floor(index / 2) * 4}
+                r="1.25"
+                fill={coat.hex}
+              />
+            ))}
           </pattern>
         </defs>
-        <g fill="none" stroke="#CDEEDB" strokeOpacity="0.45" strokeWidth="1">
-          {pitches.map((pitch) => (
-            <g key={`${pitch.x}-${pitch.y}`}>
-              <rect x={pitch.x} y={pitch.y} width={pitchW} height={pitchH} />
-              <line
-                x1={pitch.x + pitchW / 2}
-                y1={pitch.y}
-                x2={pitch.x + pitchW / 2}
-                y2={pitch.y + pitchH}
-              />
-              <circle
-                cx={pitch.x + pitchW / 2}
-                cy={pitch.y + pitchH / 2}
-                r={PITCH.centreCircleRadius * unit}
-              />
-            </g>
-          ))}
+
+        <g
+          className="fallback-crowd"
+          style={{
+            transformOrigin: `${CENTRE_X}px ${CENTRE_Y}px`,
+            transform: dotOn ? "translate(116px, 0px) scale(0.34)" : "none",
+          }}
+        >
+          {individual ? (
+            nearCats
+              .slice(0, count)
+              .map((cat) => (
+                <circle
+                  key={`${cat.x}:${cat.y}`}
+                  cx={CENTRE_X + cat.x * cell}
+                  cy={CENTRE_Y + cat.y * cell}
+                  r={cell * 0.34}
+                  fill={cat.fill}
+                />
+              ))
+          ) : (
+            <rect
+              x={CENTRE_X - side / 2}
+              y={CENTRE_Y - side / 2}
+              width={side}
+              height={side}
+              fill="url(#fallback-cats)"
+            />
+          )}
         </g>
+
         <rect
-          x={VIEW_W / 2 - blockPx / 2}
-          y={VIEW_H / 2 - blockPx / 2}
-          width={blockPx}
-          height={blockPx}
-          fill={blockPx < 9 ? "#F6EAD8" : "url(#fallback-crowd)"}
+          x={DOT_X}
+          y={CENTRE_Y - DOT_SIZE / 2}
+          width={DOT_SIZE}
+          height={DOT_SIZE}
+          fill={CRIMSON}
+          className="fallback-dot"
+          opacity={dotOn ? 1 : 0}
         />
+        <circle cx={CENTRE_X} cy={CENTRE_Y} r="8" fill={BUTTER} stroke={INK} strokeWidth="2.5" />
       </svg>
       <p className="max-w-[30rem] text-center text-[0.9rem] leading-relaxed text-dim">{note}</p>
     </div>

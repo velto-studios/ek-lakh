@@ -16,13 +16,7 @@ export function ReelSection() {
           eyebrow={reel.eyebrow}
           quietMark
           className="lg:col-span-6 lg:col-start-7 lg:row-start-1 lg:self-end"
-          title={
-            <>
-              {reel.heading.before}
-              <span className="numeral text-caption">{reel.heading.number}</span>
-              {reel.heading.after}
-            </>
-          }
+          title={reel.heading}
         />
 
         <Reveal className="min-w-0 lg:col-span-5 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-center">

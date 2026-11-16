@@ -6,18 +6,10 @@ import { Component, useCallback, useEffect, useMemo, useRef, useState, type Reac
 
 import { CountUp } from "@/components/CountUp";
 import { ScaleFallback } from "@/components/ScaleFallback";
-import { densityCopy, scale as copy } from "@/lib/content";
-import { clamp, formatApprox, formatIN } from "@/lib/format";
+import { catWord, chickWord, field as copy, words } from "@/lib/content";
+import { clamp, formatIN } from "@/lib/format";
 import { useOnScreen, usePageVisible, usePrefersReducedMotion } from "@/lib/hooks";
-import {
-  COUNT_STEPS,
-  DENSITIES,
-  crowdArea,
-  getDensity,
-  pitchEquivalent,
-  type CountStep,
-  type DensityKey,
-} from "@/lib/scale";
+import { COUNT_STEPS, type CountStep } from "@/lib/scale";
 
 function StageMessage({ text }: { text: string }) {
   return (
@@ -76,7 +68,6 @@ export function ScaleExplorer() {
   const onScreen = useOnScreen(rootRef);
 
   const [count, setCount] = useState<CountStep>(COUNT_STEPS[0]);
-  const [densityKey, setDensityKey] = useState<DensityKey>("loose");
   const [zoom, setZoom] = useState(1);
   const [autoRotate, setAutoRotate] = useState(true);
   const [resetKey, setResetKey] = useState(0);
@@ -84,23 +75,18 @@ export function ScaleExplorer() {
   const [contextLost, setContextLost] = useState(false);
   /** The opening 1 → 1,00,000 run plays once, until the visitor takes over. */
   const [sequence, setSequence] = useState<"waiting" | "stopped">("waiting");
+  /** The red dot is out while its button is on or the canvas is being held. */
+  const [dotSwitch, setDotSwitch] = useState(false);
+  const [canvasHeld, setCanvasHeld] = useState(false);
 
   const webgl = useMemo(() => (nearViewport ? supportsWebGL2() : null), [nearViewport]);
   const useFallback = webgl === false || contextLost;
   const stageReady = sceneReady || useFallback;
+  const dotOn = dotSwitch || (canvasHeld && !useFallback);
 
-  const density = getDensity(densityKey);
-  const area = crowdArea(count, density);
-  const pitches = pitchEquivalent(area);
-  const crowdName = densityCopy[densityKey].crowd;
-
-  const captionParts = [
-    `${formatIN(count)} ${count === 1 ? copy.person : copy.people}`,
-    crowdName,
-    `${copy.approx} ${formatApprox(area)} ${copy.sqm}`,
-    `${pitches < 0.05 ? copy.lessThanTenth : formatIN(pitches, 1)} ${copy.pitches}`,
-  ];
-  const caption = captionParts.join(" · ");
+  const catsText = `${formatIN(count)} ${catWord(count)}`;
+  const chickText = `${formatIN(copy.chicks)} ${chickWord(copy.chicks)}`;
+  const summary = `${catsText} · ${chickText}${dotOn ? ` · ${copy.chasing}` : ""}`;
 
   // Count up through the steps on first view, the way the reel does.
   const sequenceRunning =
@@ -122,11 +108,6 @@ export function ScaleExplorer() {
     setZoom(1);
   };
 
-  const chooseDensity = (key: DensityKey) => {
-    setDensityKey(key);
-    setZoom(1);
-  };
-
   const replaySequence = () => {
     setCount(COUNT_STEPS[0]);
     setZoom(1);
@@ -137,6 +118,7 @@ export function ScaleExplorer() {
   const zoomBy = useCallback((factor: number) => {
     setZoom((current) => clamp(current * factor, ZOOM_MIN, ZOOM_MAX));
   }, []);
+  const holdCanvas = useCallback((held: boolean) => setCanvasHeld(held), []);
   const markReady = useCallback(() => setSceneReady(true), []);
   const markLost = useCallback(() => setContextLost(true), []);
 
@@ -148,48 +130,34 @@ export function ScaleExplorer() {
   const fallback = (
     <ScaleFallback
       count={count}
-      spacing={density.spacing}
-      label={`${caption} ${copy.fallbackLabel}`}
+      dotOn={dotOn}
+      label={`${copy.fallbackLabel} ${summary}`}
       note={copy.fallbackNote}
     />
   );
 
   return (
     <div ref={rootRef} className="panel overflow-hidden">
-      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 p-5 sm:p-7">
+      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5 p-5 sm:p-7">
         <div className="min-w-0">
           <p className="label-hi">{copy.readoutLabel}</p>
           <p className="mt-1 flex flex-wrap items-baseline gap-x-3">
             <span className="numeral text-[clamp(2.6rem,9vw,4.75rem)] font-bold leading-[1.05]">
               <CountUp value={count} from={1} duration={1100} />
             </span>
-            <span className="text-[1.2rem] font-medium text-steel">
-              {count === 1 ? copy.person : copy.people}
-            </span>
+            <span className="text-[1.2rem] font-medium text-steel">{catWord(count)}</span>
           </p>
         </div>
 
-        <div className="w-full sm:w-auto">
-          <p id="density-label" className="label-hi">
-            {copy.densityLabel}
-          </p>
-          <div role="group" aria-labelledby="density-label" className="mt-2.5 grid grid-cols-3 gap-1.5">
-            {DENSITIES.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className="segment flex-col gap-0.5 px-3 py-2 leading-tight"
-                aria-pressed={densityKey === item.key}
-                onClick={() => chooseDensity(item.key)}
-              >
-                <span className="text-[1rem] font-bold">{densityCopy[item.key].label}</span>
-                <span className="font-mono text-[0.66rem] font-medium opacity-80">
-                  {item.sqft} {copy.sqft}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <button
+          type="button"
+          className="btn btn-ghost dot-switch w-full sm:w-auto"
+          aria-pressed={dotSwitch}
+          onClick={() => setDotSwitch((value) => !value)}
+        >
+          <span aria-hidden="true" className="dot-switch-mark" />
+          {words.redDot}
+        </button>
       </div>
 
       <div className="stage relative h-[60svh] min-h-[20rem] border-y border-line lg:h-[min(64svh,38rem)]">
@@ -199,15 +167,16 @@ export function ScaleExplorer() {
           <SceneBoundary fallback={fallback}>
             <ScaleScene
               count={count}
-              spacing={density.spacing}
               zoom={zoom}
               autoRotate={autoRotate}
+              dotOn={dotOn}
               resetKey={resetKey}
               active={onScreen && pageVisible}
               reducedMotion={reduced}
-              label={`${caption} ${copy.sceneLabel}`}
+              label={`${copy.sceneLabel} ${summary}`}
               onInteract={stopOrbit}
               onZoom={zoomBy}
+              onPress={holdCanvas}
               onReady={markReady}
               onLost={markLost}
             />
@@ -217,7 +186,7 @@ export function ScaleExplorer() {
         )}
 
         <p className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 text-[0.82rem] font-medium text-dim sm:left-6 sm:top-5">
-          <span aria-hidden="true" className="h-px w-5 bg-[#CDEEDB]/70" />
+          <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-butter" />
           {copy.legend}
         </p>
 
@@ -280,16 +249,17 @@ export function ScaleExplorer() {
             {copy.replay}
           </button>
         </div>
+        {/* Narrow screens: three short numbers on one row, the two long ones on the next. */}
         <div
           role="group"
           aria-labelledby="count-label"
-          className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-6"
+          className="mt-2 grid grid-cols-6 gap-1.5 sm:grid-cols-5"
         >
-          {COUNT_STEPS.map((step) => (
+          {COUNT_STEPS.map((step, index) => (
             <button
               key={step}
               type="button"
-              className="segment numeral text-[0.92rem] font-bold"
+              className={`segment numeral text-[0.92rem] font-bold sm:col-span-1 ${index < 3 ? "col-span-2" : "col-span-3"}`}
               aria-pressed={count === step}
               onClick={() => chooseCount(step)}
             >
@@ -298,21 +268,23 @@ export function ScaleExplorer() {
           ))}
         </div>
 
-        <p
+        <div
           aria-live={sequenceRunning ? "off" : "polite"}
-          className="mt-6 text-[clamp(1rem,0.95rem+0.4vw,1.25rem)] font-medium leading-relaxed text-white"
+          className="mt-6 text-[clamp(1rem,0.95rem+0.4vw,1.25rem)] font-medium leading-relaxed"
         >
-          {captionParts.map((part, index) => (
-            <span key={part}>
-              {index > 0 ? (
-                <span aria-hidden="true" className="text-dim">
-                  {" · "}
-                </span>
-              ) : null}
-              <span className={index === 1 ? "text-steel" : undefined}>{part}</span>
+          <p>
+            <span className="text-white">{catsText}</span>
+            <span aria-hidden="true" className="text-dim">
+              {" · "}
             </span>
-          ))}
-        </p>
+            <span className="text-butter">{chickText}</span>
+          </p>
+          {/* Always laid out, so switching the dot on and off never moves the page. */}
+          <p className={`mt-1 flex items-center gap-2.5 text-white ${dotOn ? "" : "invisible"}`}>
+            <span aria-hidden="true" className="h-2.5 w-2.5 flex-none bg-crimson" />
+            {copy.chasing}
+          </p>
+        </div>
         {useFallback ? null : (
           <p className="mt-3 text-[0.9rem] leading-relaxed text-dim">{copy.hint}</p>
         )}

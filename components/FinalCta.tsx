@@ -40,7 +40,7 @@ export function FinalCta() {
     const url = window.location.href;
     if (typeof navigator.share === "function") {
       try {
-        await navigator.share({ title: site.metaTitle, text: site.description, url });
+        await navigator.share({ title: site.metaTitle, text: closing.shareText, url });
         return;
       } catch (error) {
         // Closing the share sheet is not a failure; anything else falls back to copying.

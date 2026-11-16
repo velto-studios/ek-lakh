@@ -1,124 +1,99 @@
-import type { FactCardKind } from "@/lib/content";
-import { PITCH, TOTAL_PEOPLE } from "@/lib/scale";
+import {
+  BEAK,
+  BUTTER,
+  CRIMSON,
+  CatHead,
+  ChickShapes,
+  EYE_GLOW,
+  FEATHER,
+  INK,
+  SOFT,
+  TRACK,
+} from "@/components/Characters";
+import type { StatKind } from "@/lib/content";
+import { COATS, coatHex } from "@/lib/scale";
 
 /**
- * Small hand-drawn illustrations for the fact cards. Each one is built from
- * the same numbers the card states, so the picture is as true as the figure.
+ * Small hand-drawn illustrations for the stat cards, built from the same
+ * shapes and colours as the cast.
  */
 
-const INK = "#FFFFFF";
-const SOFT = "#B8BCC4";
-const TRACK = "#34363E";
+const frame = {
+  viewBox: "0 0 160 120",
+  "aria-hidden": true,
+  focusable: false,
+  className: "h-full w-auto",
+} as const;
 
-const SECONDS_IN_DAY = 86_400;
-
-function ClockArt() {
-  // 1,00,000 seconds = one full day (outer ring) plus the remainder (inner arc).
-  const remainder = ((TOTAL_PEOPLE % SECONDS_IN_DAY) / SECONDS_IN_DAY) * 100;
-  const ticks = Array.from({ length: 24 }, (_, index) => index);
-  return (
-    <svg viewBox="0 0 160 120" aria-hidden="true" focusable="false" className="h-full w-auto">
-      <g transform="translate(80 60)">
-        {ticks.map((tick) => (
-          <line
-            key={tick}
-            x1="0"
-            y1="-54"
-            x2="0"
-            y2={tick % 6 === 0 ? -47 : -50}
-            stroke={tick % 6 === 0 ? SOFT : TRACK}
-            strokeWidth="1.2"
-            transform={`rotate(${tick * 15})`}
-          />
-        ))}
-        <circle r="41" fill="none" stroke={INK} strokeWidth="3" />
-        <circle r="30" fill="none" stroke={TRACK} strokeWidth="3" />
-        <circle
-          r="30"
-          fill="none"
-          stroke={INK}
-          strokeWidth="3"
-          strokeLinecap="round"
-          pathLength="100"
-          strokeDasharray={`${remainder.toFixed(2)} 100`}
-          transform="rotate(-90)"
-        />
-        <line x1="0" y1="0" x2="0" y2="-19" stroke={SOFT} strokeWidth="1.6" strokeLinecap="round" />
-        <line
-          x1="0"
-          y1="0"
-          x2="0"
-          y2="-15"
-          stroke={SOFT}
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          transform={`rotate(${(remainder / 100) * 360})`}
-        />
-        <circle r="2.2" fill={INK} />
-      </g>
-    </svg>
-  );
+interface ArtProps {
+  values: readonly number[];
 }
 
-function PitchesArt() {
-  const total = 13;
-  const perRow = 5;
-  const pitchW = 27;
-  const pitchH = (pitchW * PITCH.width) / PITCH.length;
-  const gap = 4.5;
-  const cells = Array.from({ length: total }, (_, index) => ({
-    x: 2 + (index % perRow) * (pitchW + gap),
-    y: 22 + Math.floor(index / perRow) * (pitchH + gap + 6),
-  }));
+/** A carpet of cats, with one small yellow dot somewhere under it. */
+function CatsArt() {
+  const coats = [...COATS, COATS[0]];
   return (
-    <svg viewBox="0 0 160 120" aria-hidden="true" focusable="false" className="h-full w-auto">
-      <g fill="none" stroke={SOFT} strokeWidth="1">
-        {cells.map((cell) => (
-          <g key={`${cell.x}-${cell.y}`}>
-            <rect x={cell.x} y={cell.y} width={pitchW} height={pitchH} stroke={INK} />
-            <line x1={cell.x + pitchW / 2} y1={cell.y} x2={cell.x + pitchW / 2} y2={cell.y + pitchH} />
-            <circle cx={cell.x + pitchW / 2} cy={cell.y + pitchH / 2} r="2.4" />
-          </g>
-        ))}
-      </g>
-    </svg>
-  );
-}
-
-function QueueArt() {
-  const marks = [0, 10, 20, 30, 40, 50];
-  const startX = 8;
-  const endX = 152;
-  const span = endX - startX;
-  return (
-    <svg viewBox="0 0 160 120" aria-hidden="true" focusable="false" className="h-full w-auto">
-      <line
-        x1={startX}
-        y1="58"
-        x2={endX}
-        y2="58"
-        stroke={INK}
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeDasharray="0.1 4.9"
-      />
-      <line x1={startX} y1="72" x2={endX} y2="72" stroke={TRACK} strokeWidth="1" />
-      {marks.map((mark) => {
-        const x = startX + (mark / 50) * span;
-        return (
-          <g key={mark}>
-            <line x1={x} y1="68" x2={x} y2="76" stroke={SOFT} strokeWidth="1" />
-            <text
-              x={x}
-              y="90"
-              textAnchor="middle"
-              fontSize="8"
-              fontWeight="500"
-              fill={SOFT}
-              className="font-mono"
+    <svg {...frame}>
+      <defs>
+        <pattern id="art-cats" width="30" height="18" patternUnits="userSpaceOnUse">
+          {coats.map((coat, index) => (
+            <g
+              key={`${coat.key}-${index}`}
+              transform={`translate(${1 + (index % 3) * 10} ${0.8 + Math.floor(index / 3) * 9})`}
+              fill={coat.hex}
             >
-              {mark}
-            </text>
+              <path d="M0.6 3.4 1.1 0.3 3.4 2ZM7.4 3.4 6.9 0.3 4.6 2Z" />
+              <circle cx="4" cy="4.6" r="3.1" />
+            </g>
+          ))}
+        </pattern>
+      </defs>
+      <rect width="160" height="120" fill="url(#art-cats)" />
+      <circle cx="80" cy="60" r="12" fill={INK} opacity="0.92" />
+      <circle cx="80" cy="60" r="5.5" fill={BUTTER} />
+    </svg>
+  );
+}
+
+function ChickArt() {
+  return (
+    <svg {...frame}>
+      <ellipse cx="80" cy="111" rx="30" ry="4" fill="#000000" opacity="0.4" />
+      <g transform="translate(29 6) scale(2.2)">
+        <ChickShapes />
+      </g>
+    </svg>
+  );
+}
+
+/** The red dot, and three cats that cannot look away. */
+function DotArt() {
+  const watchers = [
+    { x: 24, y: 28 },
+    { x: 137, y: 42 },
+    { x: 34, y: 98 },
+  ];
+  return (
+    <svg {...frame}>
+      <g fill="none" stroke={CRIMSON}>
+        <circle cx="80" cy="60" r="24" strokeOpacity="0.4" strokeWidth="1.4" />
+        <circle cx="80" cy="60" r="38" strokeOpacity="0.2" strokeWidth="1.2" />
+        <circle cx="80" cy="60" r="52" strokeOpacity="0.09" strokeWidth="1" />
+      </g>
+      <rect x="71" y="51" width="18" height="18" fill={CRIMSON} />
+      {watchers.map((watcher) => {
+        // Each pupil sits a little towards the dot.
+        const dx = 80 - watcher.x;
+        const dy = 60 - watcher.y;
+        const length = Math.hypot(dx, dy);
+        const px = (dx / length) * 1.5;
+        const py = (dy / length) * 1.1;
+        return (
+          <g key={`${watcher.x}-${watcher.y}`} transform={`translate(${watcher.x} ${watcher.y})`}>
+            <ellipse cx="-5" cy="0" rx="3.4" ry="3.9" fill={EYE_GLOW} />
+            <ellipse cx="5" cy="0" rx="3.4" ry="3.9" fill={EYE_GLOW} />
+            <ellipse cx={-5 + px} cy={py} rx="0.9" ry="2.8" fill={INK} />
+            <ellipse cx={5 + px} cy={py} rx="0.9" ry="2.8" fill={INK} />
           </g>
         );
       })}
@@ -126,99 +101,95 @@ function QueueArt() {
   );
 }
 
-function BusesArt() {
-  // 50 columns × 40 rows = exactly 2,000 buses.
+/** Mother Hen is calling. */
+function CallArt() {
   return (
-    <svg viewBox="0 0 160 120" aria-hidden="true" focusable="false" className="h-full w-auto">
-      <defs>
-        <pattern id="art-bus" width="3.2" height="3" patternUnits="userSpaceOnUse">
-          <rect x="0.4" y="0.6" width="2.4" height="1.5" rx="0.4" fill={INK} />
-        </pattern>
-      </defs>
-      <rect width="160" height="120" fill="url(#art-bus)" opacity="0.92" />
-    </svg>
-  );
-}
-
-function StadiumArt() {
-  return (
-    <svg viewBox="0 0 160 120" aria-hidden="true" focusable="false" className="h-full w-auto">
-      <ellipse cx="80" cy="60" rx="66" ry="44" fill="none" stroke={TRACK} strokeWidth="13" />
-      <ellipse
-        cx="80"
-        cy="60"
-        rx="66"
-        ry="44"
-        fill="none"
-        stroke={INK}
-        strokeWidth="13"
-        pathLength="100"
-        strokeDasharray="76 100"
-      />
-      <ellipse cx="80" cy="60" rx="52" ry="31" fill="none" stroke="#0B0B0D" strokeWidth="1.2" />
-      <ellipse cx="80" cy="60" rx="33" ry="19" fill="none" stroke={SOFT} strokeWidth="1" />
-      <rect x="77" y="52" width="6" height="16" fill="none" stroke={SOFT} strokeWidth="1" />
-    </svg>
-  );
-}
-
-function IndiaArt() {
-  // 138 columns × 107 rows = exactly 14,766 tiles; each tile is one lakh people.
-  // The inset magnifies a 5 × 5 patch so a single tile can be seen.
-  const inset = { x: 88, y: 55, size: 46 };
-  const patch = { x: 30, y: 22, size: 5 };
-  const cell = inset.size / 5;
-  const tiles = Array.from({ length: 25 }, (_, index) => ({
-    x: inset.x + (index % 5) * cell,
-    y: inset.y + Math.floor(index / 5) * cell,
-    centre: index === 12,
-  }));
-  return (
-    <svg viewBox="0 0 138 107" aria-hidden="true" focusable="false" className="h-full w-auto">
-      <defs>
-        <pattern id="art-tile" width="1" height="1" patternUnits="userSpaceOnUse">
-          <rect x="0.14" y="0.14" width="0.72" height="0.72" fill={SOFT} />
-        </pattern>
-      </defs>
-      <rect width="138" height="107" fill="url(#art-tile)" opacity="0.55" />
-      <g fill="none" stroke={INK} strokeWidth="0.7">
-        <rect x={patch.x} y={patch.y} width={patch.size} height={patch.size} />
-        <line x1={patch.x + patch.size} y1={patch.y} x2={inset.x + inset.size} y2={inset.y} />
-        <line x1={patch.x} y1={patch.y + patch.size} x2={inset.x} y2={inset.y + inset.size} />
+    <svg {...frame}>
+      <g fill="none" stroke={SOFT} strokeWidth="2" strokeLinecap="round">
+        <path d="M46 44c-5 9-5 23 0 32" />
+        <path d="M35 36c-9 14-9 34 0 48" strokeOpacity="0.5" />
+        <path d="M114 44c5 9 5 23 0 32" />
+        <path d="M125 36c9 14 9 34 0 48" strokeOpacity="0.5" />
       </g>
-      <rect
-        x={inset.x}
-        y={inset.y}
-        width={inset.size}
-        height={inset.size}
-        fill="#0B0B0D"
-        stroke={INK}
-        strokeWidth="0.9"
-      />
-      {tiles.map((tile) => (
-        <rect
-          key={`${tile.x}-${tile.y}`}
-          x={tile.x + cell * 0.14}
-          y={tile.y + cell * 0.14}
-          width={cell * 0.72}
-          height={cell * 0.72}
-          fill={tile.centre ? INK : TRACK}
-        />
+      <rect x="57" y="10" width="46" height="100" rx="10" fill="#15161A" stroke="#FFFFFF" strokeWidth="2.6" />
+      <path d="M74 18.5h12" stroke={TRACK} strokeWidth="2.4" strokeLinecap="round" />
+      <circle cx="73.5" cy="37.5" r="3.6" fill={BEAK} />
+      <circle cx="80" cy="35" r="4.3" fill={BEAK} />
+      <circle cx="86.5" cy="37.5" r="3.6" fill={BEAK} />
+      <circle cx="80" cy="50" r="12.5" fill={FEATHER} />
+      <path d="M76.5 52.5 80 58.5 83.5 52.5Z" fill={BEAK} stroke={BEAK} strokeWidth="1" strokeLinejoin="round" />
+      <circle cx="74.8" cy="47.5" r="1.7" fill={INK} />
+      <circle cx="85.2" cy="47.5" r="1.7" fill={INK} />
+      <path d="M70 74h20M73.5 81h13" stroke={TRACK} strokeWidth="2.4" strokeLinecap="round" />
+      <circle cx="80" cy="96" r="6.5" fill={BUTTER} />
+    </svg>
+  );
+}
+
+/** Not one cat left: only paw prints, heading off after the dot. */
+function LeftArt() {
+  const prints = [
+    { x: 24, y: 98, opacity: 0.95 },
+    { x: 46, y: 76, opacity: 0.78 },
+    { x: 72, y: 66, opacity: 0.6 },
+    { x: 92, y: 42, opacity: 0.42 },
+    { x: 118, y: 33, opacity: 0.27 },
+    { x: 138, y: 11, opacity: 0.14 },
+  ];
+  return (
+    <svg {...frame}>
+      {prints.map((print) => (
+        <g
+          key={`${print.x}-${print.y}`}
+          transform={`translate(${print.x} ${print.y}) rotate(48)`}
+          fill={SOFT}
+          opacity={print.opacity}
+        >
+          <ellipse cx="0" cy="3.2" rx="5.6" ry="4.6" />
+          <circle cx="-6.4" cy="-3.2" r="2.3" />
+          <circle cx="-2.2" cy="-6.4" r="2.4" />
+          <circle cx="2.6" cy="-6.4" r="2.4" />
+          <circle cx="6.6" cy="-3" r="2.3" />
+        </g>
       ))}
     </svg>
   );
 }
 
-const art: Record<FactCardKind, () => React.JSX.Element> = {
-  time: ClockArt,
-  space: PitchesArt,
-  queue: QueueArt,
-  buses: BusesArt,
-  stadium: StadiumArt,
-  india: IndiaArt,
+/** The scoreboard: Peelu on the left, the cats on the right. */
+function ScoreArt({ values }: ArtProps) {
+  const [home = 0, away = 0] = values;
+  const digits = { fontSize: 34, fontWeight: 700, textAnchor: "middle", className: "font-mono" } as const;
+  return (
+    <svg {...frame}>
+      <rect x="6" y="22" width="148" height="76" rx="12" fill="none" stroke={TRACK} strokeWidth="2" />
+      <path d="M80 30v60" stroke={TRACK} strokeWidth="2" strokeLinecap="round" />
+      <g transform="translate(13 43) scale(0.7)">
+        <ChickShapes />
+      </g>
+      <text x="62" y="72" fill="#FFFFFF" {...digits}>
+        {home}
+      </text>
+      <text x="98" y="72" fill={SOFT} {...digits}>
+        {away}
+      </text>
+      <g transform="translate(114 45) scale(0.54)">
+        <CatHead coat={coatHex("grey")} />
+      </g>
+    </svg>
+  );
+}
+
+const art: Record<StatKind, (props: ArtProps) => React.JSX.Element> = {
+  cats: CatsArt,
+  chick: ChickArt,
+  dot: DotArt,
+  call: CallArt,
+  left: LeftArt,
+  score: ScoreArt,
 };
 
-export function FactArt({ kind }: { kind: FactCardKind }) {
+export function FactArt({ kind, values }: { kind: StatKind } & ArtProps) {
   const Art = art[kind];
-  return <Art />;
+  return <Art values={values} />;
 }

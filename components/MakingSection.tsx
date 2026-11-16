@@ -1,29 +1,33 @@
 import {
-  ArrowUpRight,
   AudioLines,
-  Calculator,
   CodeXml,
+  Drama,
   Lightbulb,
   PanelsTopLeft,
   type LucideIcon,
 } from "lucide-react";
 
+import { CatGangPortrait, HenPortrait, PeeluPortrait } from "@/components/Characters";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeader } from "@/components/SectionHeader";
-import { facts, making, site, sourcesBlock, type MakingIcon } from "@/lib/content";
+import { cast, making, type CastKey, type MakingIcon } from "@/lib/content";
 import { pad2 } from "@/lib/format";
 
 const icons: Record<MakingIcon, LucideIcon> = {
   idea: Lightbulb,
-  facts: Calculator,
+  cast: Drama,
   code: CodeXml,
   audio: AudioLines,
   web: PanelsTopLeft,
 };
 
-export function MakingSection() {
-  const { columns } = sourcesBlock;
+const portraits: Record<CastKey, () => React.JSX.Element> = {
+  peelu: PeeluPortrait,
+  cats: CatGangPortrait,
+  hen: HenPortrait,
+};
 
+export function MakingSection() {
   return (
     <section id="making" aria-labelledby="making-title" className="section hairline-top">
       <div className="shell">
@@ -70,74 +74,38 @@ export function MakingSection() {
         </div>
 
         <Reveal className="panel mt-[clamp(3.5rem,8vw,6rem)] p-5 sm:p-8 lg:p-10">
+          <p className="eyebrow">
+            <span className="eyebrow-mark eyebrow-mark-quiet" aria-hidden="true" />
+            {cast.eyebrow}
+          </p>
           <h3
-            id="sources-title"
-            className="text-[clamp(1.5rem,1.2rem+1.4vw,2.25rem)] font-extrabold leading-[1.25]"
+            id="cast-title"
+            className="mt-4 text-[clamp(1.5rem,1.2rem+1.4vw,2.25rem)] font-extrabold leading-[1.25]"
           >
-            {sourcesBlock.heading}
+            {cast.heading}
           </h3>
 
-          <div role="table" aria-label={sourcesBlock.tableLabel} className="mt-7">
-            <div role="rowgroup" className="hidden md:block">
-              <div
-                role="row"
-                className="grid grid-cols-[11rem_minmax(0,1fr)_minmax(0,1.35fr)] gap-x-8 border-b border-line pb-3 text-[0.9rem] font-medium text-dim"
-              >
-                <span role="columnheader">{columns.fact}</span>
-                <span role="columnheader">{columns.figure}</span>
-                <span role="columnheader">{columns.basis}</span>
-              </div>
-            </div>
-            <div role="rowgroup">
-              {facts.map((fact) => (
-                <div
-                  key={fact.key}
-                  role="row"
-                  className="grid gap-x-8 gap-y-1 border-b border-line/70 py-4 md:grid-cols-[11rem_minmax(0,1fr)_minmax(0,1.35fr)] md:py-3.5"
+          <ul
+            aria-labelledby="cast-title"
+            className="mt-7 grid gap-x-8 gap-y-7 md:grid-cols-3 lg:gap-x-10"
+          >
+            {cast.members.map((member) => {
+              const Portrait = portraits[member.key];
+              return (
+                <li
+                  key={member.key}
+                  className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-5 border-t border-line pt-7 first:border-t-0 first:pt-0 md:grid-cols-1 md:items-start md:border-t-0 md:pt-0"
                 >
-                  <span role="cell" className="text-[0.92rem] font-medium text-dim md:text-[1rem]">
-                    {fact.label}
-                  </span>
-                  <span role="cell" className="text-[1.08rem] font-bold leading-snug text-white">
-                    {fact.display}
-                  </span>
-                  <span role="cell" className="text-[0.98rem] leading-relaxed text-steel">
-                    {fact.basis}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <p className="mt-6 max-w-[44rem] text-[1.02rem] leading-relaxed text-steel">
-            {sourcesBlock.note}
-          </p>
-
-          <h4 className="mt-9 text-[0.92rem] font-medium text-dim">{sourcesBlock.listLabel}</h4>
-          <ul className="mt-2 grid gap-x-10 md:grid-cols-2">
-            {sourcesBlock.sources.map((source) => (
-              <li key={source.href} className="border-b border-line/70">
-                <a
-                  href={source.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  lang="en"
-                  className="group flex min-h-12 items-center justify-between gap-4 py-3 text-[0.98rem] leading-snug text-white transition-colors duration-200 hover:text-steel"
-                >
-                  <span className="min-w-0">
-                    {source.label}
-                    <span className="sr-only" lang="hi">
-                      {" "}
-                      ({site.newTab})
-                    </span>
-                  </span>
-                  <ArrowUpRight
-                    className="h-4 w-4 shrink-0 text-dim transition-transform duration-300 ease-soft group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </a>
-              </li>
-            ))}
+                  <div className="h-24 w-24 rounded-[1.25rem] border border-line bg-charcoal p-2.5 sm:h-28 sm:w-28">
+                    <Portrait />
+                  </div>
+                  <div className="min-w-0 md:mt-5">
+                    <h4 className="text-[1.3rem] font-extrabold leading-snug">{member.name}</h4>
+                    <p className="mt-1.5 text-[1.02rem] leading-[1.75] text-steel">{member.line}</p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </Reveal>
       </div>

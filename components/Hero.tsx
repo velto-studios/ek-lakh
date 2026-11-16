@@ -80,7 +80,7 @@ export function Hero() {
               <Play className="h-[1.05rem] w-[1.05rem] fill-current" aria-hidden="true" />
               {hero.primaryCta}
             </button>
-            <a href="#scale" className="btn btn-ghost">
+            <a href={hero.secondaryHref} className="btn btn-ghost">
               {hero.secondaryCta}
               <ArrowDown className="h-[1.05rem] w-[1.05rem]" aria-hidden="true" />
             </a>
