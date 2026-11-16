@@ -2,7 +2,7 @@
   "name": "ek-lakh",
   "version": "1.0.0",
   "private": true,
-  "description": "एक लाख लोग असल में कितने होते हैं? A visual story by Velto Studios.",
+  "description": "पीलू vs 1 लाख बिल्लियाँ. One chick, one lakh cats and one red dot, by Velto Studios.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
