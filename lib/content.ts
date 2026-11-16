@@ -1,17 +1,29 @@
 /**
  * Single source of truth for every word, number and link on the site.
- * Facts are quoted exactly as verified; each one carries the assumption it rests on.
+ * The reel's narration is quoted verbatim in `scenes`.
  */
 
-import type { DensityKey } from "@/lib/scale";
+import { TOTAL_CATS } from "@/lib/scale";
 
 export const SITE_URL_FALLBACK = "https://ek-lakh.vercel.app";
 
+const BRAND = "Velto Studios";
+const TITLE = "पीलू vs 1 लाख बिल्लियाँ";
+const SUMMARY =
+  "एक नन्हा चूज़ा। एक लाख बिल्लियाँ। और एक छोटी-सी लाल बिंदी, जिसने पूरा खेल पलट दिया।";
+const WATCH_REEL = "रील देखें";
+const MOTHER_QUOTE = "“बेटा, खाना खा लिया?”";
+const CAT_COUNT_LABEL = "बिल्लियों की गिनती";
+const CAST_WORD = "किरदार";
+const RED_DOT = "लाल बिंदी";
+const MOTHER_CALL = "माँ का फ़ोन";
+const TEAM_HREF = "#team";
+
 export const site = {
-  brand: "Velto Studios",
-  title: "एक लाख लोग असल में कितने होते हैं?",
-  metaTitle: "एक लाख लोग असल में कितने होते हैं? | Velto Studios",
-  description: "एक संख्या, जिसे हम रोज़ सुनते हैं पर कभी देखते नहीं।",
+  brand: BRAND,
+  title: TITLE,
+  metaTitle: `${TITLE} | ${BRAND}`,
+  description: SUMMARY,
   tagline: "Ideas don't build themselves. We do.",
   instagram: {
     url: "https://www.instagram.com/velto_studios/",
@@ -31,6 +43,24 @@ export const media = {
   sceneSize: { width: 720, height: 1280 },
 } as const;
 
+/** The nouns the page counts with, singular and plural. */
+export const words = {
+  peelu: "पीलू",
+  cat: "बिल्ली",
+  cats: "बिल्लियाँ",
+  chick: "चूज़ा",
+  chicks: "चूज़े",
+  redDot: RED_DOT,
+} as const;
+
+export function catWord(count: number): string {
+  return count === 1 ? words.cat : words.cats;
+}
+
+export function chickWord(count: number): string {
+  return count === 1 ? words.chick : words.chicks;
+}
+
 export interface NavItem {
   href: string;
   label: string;
@@ -38,7 +68,8 @@ export interface NavItem {
 
 export const nav: readonly NavItem[] = [
   { href: "#reel", label: "रील" },
-  { href: "#scale", label: "पैमाना" },
+  { href: TEAM_HREF, label: "टीम" },
+  { href: "#scale", label: "मैदान" },
   { href: "#story", label: "कहानी" },
   { href: "#making", label: "निर्माण" },
 ];
@@ -51,27 +82,28 @@ export const navCopy = {
 } as const;
 
 export const hero = {
-  eyebrow: { brand: "VELTO STUDIOS", line: "एक दृश्य कहानी" },
-  title: site.title,
-  counterLabel: "गिनती",
+  eyebrow: { brand: "VELTO STUDIOS", line: "एक छोटी-सी लड़ाई" },
+  title: TITLE,
+  counterLabel: CAT_COUNT_LABEL,
   counterFrom: 1,
-  counterTo: 100_000,
-  sub: "एक संख्या, जिसे हम रोज़ सुनते हैं पर कभी देखते नहीं। यहाँ उसे गिनकर, नापकर और देखकर समझिए।",
-  primaryCta: "रील देखें",
-  secondaryCta: "कहानी देखें",
+  counterTo: TOTAL_CATS,
+  sub: SUMMARY,
+  primaryCta: WATCH_REEL,
+  secondaryCta: "टीम में आइए",
+  secondaryHref: TEAM_HREF,
   scrollCue: "SCROLL",
 } as const;
 
 export const reel = {
   eyebrow: "THE REEL",
-  heading: { before: "पूरी कहानी, ", number: "63", after: " सेकंड में" },
+  heading: "पूरी लड़ाई, एक मिनट से कम में",
   paragraph:
-    "एक इंसान से शुरू होकर एक लाख तक पहुँचती गिनती, और फिर वे तुलनाएँ जो इस संख्या को आँखों के सामने खड़ा कर देती हैं।",
+    "गिनती एक से शुरू होती है और एक लाख पर जाकर रुकती है। फिर पीलू अपनी जेब से कुछ निकालता है।",
   chips: ["हिंदी वॉइसओवर", "हिंदी सबटाइटल", "9:16 वर्टिकल"],
   keys: "कीबोर्ड: स्पेस से चलाएँ या रोकें · ← → से 5 सेकंड आगे-पीछे · M से आवाज़ · F से फ़ुलस्क्रीन",
   player: {
     label: "रील प्लेयर",
-    videoLabel: "रील: एक लाख लोग असल में कितने होते हैं?",
+    videoLabel: `रील: ${TITLE}`,
     play: "रील चलाएँ",
     pause: "रील रोकें",
     replay: "दोबारा देखें",
@@ -83,34 +115,58 @@ export const reel = {
     loading: "वीडियो लोड हो रहा है",
     error: "वीडियो लोड नहीं हो सका",
     retry: "फिर कोशिश करें",
-    posterTitle: "एक लाख",
+    posterTitle: words.peelu,
     posterNote: "REEL · 9:16",
   },
 } as const;
 
-export const densityCopy: Record<DensityKey, { label: string; crowd: string }> = {
-  loose: { label: "खुली", crowd: "खुली भीड़" },
-  dense: { label: "सघन", crowd: "सघन भीड़" },
-  packed: { label: "बेहद सघन", crowd: "बेहद सघन भीड़" },
-};
+/** Hindi month names, January first. */
+export const monthsHi = [
+  "जनवरी",
+  "फ़रवरी",
+  "मार्च",
+  "अप्रैल",
+  "मई",
+  "जून",
+  "जुलाई",
+  "अगस्त",
+  "सितंबर",
+  "अक्टूबर",
+  "नवंबर",
+  "दिसंबर",
+] as const;
 
-export const scale = {
-  eyebrow: "SCALE EXPLORER",
-  heading: "ख़ुद गिनकर देखिए",
-  lede: "यहाँ हर बिंदु एक इंसान है। गिनती बढ़ाइए, भीड़ की घनता बदलिए और देखिए कि फ़ुटबॉल के मैदानों पर यह भीड़ कितनी जगह घेरती है।",
-  readoutLabel: "स्क्रीन पर",
-  person: "व्यक्ति",
-  people: "लोग",
-  countLabel: "लोगों की गिनती",
-  densityLabel: "भीड़ की घनता",
-  sqft: "वर्ग फ़ुट",
-  perPerson: "प्रति व्यक्ति",
-  approx: "लगभग",
-  sqm: "वर्ग मीटर",
-  pitches: "मैदान",
-  lessThanTenth: "0.1 से कम",
-  legend: "हरी रेखाएँ: फ़ुटबॉल मैदान, 105 × 68 मीटर",
-  hint: "घुमाने के लिए खींचें। ज़ूम के लिए + और − बटन दबाएँ, या Ctrl दबाकर स्क्रॉल करें।",
+export const team = {
+  eyebrow: "TEAM PEELU",
+  heading: "हर व्यू, एक नया चूज़ा",
+  lede: "अगली लड़ाई पीलू अकेले नहीं लड़ेगा। इस रील का हर व्यू, टीम पीलू में एक नया चूज़ा जोड़ता है।",
+  countPrefix: "टीम पीलू:",
+  /** At most this many chick icons are drawn; the rest are summed up in one line. */
+  maxIcons: 300,
+  more: "और",
+  alone: "अभी टीम में अकेला पीलू है। पहला चूज़ा आप बनिए।",
+  join: "मैं भी टीम में हूँ",
+  leave: "टीम छोड़ें",
+  youTag: "+1 आप",
+  joined: "आपका चूज़ा टीम में है।",
+  reelLink: "रील पर जाएँ",
+  note: {
+    before: "यह गिनती रील के व्यूज़ से समय-समय पर अपडेट की जाती है। आख़िरी अपडेट: ",
+    after: "। आपका चूज़ा सिर्फ़ आपके ब्राउज़र में सेव होता है।",
+  },
+} as const;
+
+export const field = {
+  eyebrow: "THE FIELD",
+  heading: "बिल्लियाँ गिनिए, फिर लाल बिंदी दिखाइए",
+  lede: "यहाँ हर बिंदु एक बिल्ली है और बीच का पीला बिंदु पीलू। गिनती बढ़ाइए, फिर लाल बिंदी चालू कीजिए और देखिए कि मैदान कैसे ख़ाली होता है।",
+  readoutLabel: "मैदान में",
+  countLabel: CAT_COUNT_LABEL,
+  /** There is only ever one of him. */
+  chicks: 1,
+  chasing: "सब लाल बिंदी के पीछे",
+  legend: "पीला बिंदु: पीलू",
+  hint: "घुमाने के लिए खींचें। दबाए रखने पर भी लाल बिंदी चालू रहती है। ज़ूम के लिए + और − बटन दबाएँ, या Ctrl दबाकर स्क्रॉल करें।",
   zoomIn: "ज़ूम इन",
   zoomOut: "ज़ूम आउट",
   pauseOrbit: "अपने-आप घूमना रोकें",
@@ -119,166 +175,66 @@ export const scale = {
   replay: "गिनती फिर चलाएँ",
   loading: "दृश्य तैयार हो रहा है…",
   fallbackNote: "इस डिवाइस पर 3D दृश्य उपलब्ध नहीं है, इसलिए सरल चित्र दिखाया जा रहा है।",
-  sceneLabel: "का 3D दृश्य, फ़ुटबॉल मैदानों की रेखाओं के ऊपर",
-  fallbackLabel: "का सरल चित्र, फ़ुटबॉल मैदानों की रेखाओं के ऊपर",
-  factsEyebrow: "BY THE NUMBERS",
-  factsHeading: "एक लाख, छह पैमानों पर",
+  sceneLabel: "3D दृश्य:",
+  fallbackLabel: "सरल चित्र:",
+  statsEyebrow: "BY THE NUMBERS",
+  statsHeading: "पूरी लड़ाई, छह आँकड़ों में",
 } as const;
 
-/** The eight verified facts, exactly as checked, each with the assumption behind it. */
-export interface Fact {
-  key:
-    | "countTime"
-    | "spaceLoose"
-    | "spaceDense"
-    | "spacePacked"
-    | "queue"
-    | "buses"
-    | "stadium"
-    | "india";
-  label: string;
-  display: string;
-  basis: string;
-}
+export type StatKind = "cats" | "chick" | "dot" | "call" | "left" | "score";
 
-export const facts: readonly Fact[] = [
-  {
-    key: "countTime",
-    label: "गिनने का समय",
-    display: "27 घंटे 46 मिनट 40 सेकंड",
-    basis: "हर सेकंड एक इंसान गिनें: 1,00,000 सेकंड",
-  },
-  {
-    key: "spaceLoose",
-    label: "जगह, खुली भीड़",
-    display: "13 फ़ुटबॉल मैदान (लगभग 92,900 वर्ग मीटर)",
-    basis:
-      "खुली भीड़: प्रति व्यक्ति 10 वर्ग फ़ुट (जैकब्स विधि); मैदान 105 × 68 मीटर = 7,140 वर्ग मीटर",
-  },
-  {
-    key: "spaceDense",
-    label: "जगह, सघन भीड़",
-    display: "लगभग 6 मैदान (लगभग 41,800 वर्ग मीटर)",
-    basis: "सघन भीड़: प्रति व्यक्ति 4.5 वर्ग फ़ुट",
-  },
-  {
-    key: "spacePacked",
-    label: "जगह, बेहद सघन भीड़",
-    display: "लगभग 3¼ मैदान (लगभग 23,200 वर्ग मीटर)",
-    basis: "बेहद सघन: प्रति व्यक्ति 2.5 वर्ग फ़ुट, यह ऊपरी सीमा मानी जाती है",
-  },
-  {
-    key: "queue",
-    label: "कतार",
-    display: "50 किलोमीटर",
-    basis: "एक कतार, हर व्यक्ति को आधा मीटर",
-  },
-  {
-    key: "buses",
-    label: "बसें",
-    display: "2,000 बसें",
-    basis: "50 सीट वाली बस",
-  },
-  {
-    key: "stadium",
-    label: "स्टेडियम",
-    display: "लगभग 76% (तीन-चौथाई)",
-    basis: "दुनिया का सबसे बड़ा क्रिकेट स्टेडियम, अहमदाबाद: 1,32,000 सीटें",
-  },
-  {
-    key: "india",
-    label: "भारत",
-    display: "लगभग 14,766 गुना (क़रीब पौने पंद्रह हज़ार)",
-    basis:
-      "भारत की अनुमानित आबादी 2026: लगभग 147.66 करोड़ (संयुक्त राष्ट्र, World Population Prospects 2024)",
-  },
-];
-
-export function getFact(key: Fact["key"]): Fact {
-  const fact = facts.find((item) => item.key === key);
-  if (!fact) throw new Error(`Unknown fact: ${key}`);
-  return fact;
-}
-
-/** Six cards; the "space" card folds the three crowd densities into one. */
-export type FactCardKind = "time" | "space" | "queue" | "buses" | "stadium" | "india";
-
-export interface FactCard {
-  kind: FactCardKind;
+export interface StatCard {
+  kind: StatKind;
+  /** What the number counts; it reads on as the unit, as in "1,00,000 बिल्लियाँ". */
   title: string;
-  /** The number that counts up. For "time" it is a number of seconds. */
-  value: number;
-  prefix?: string;
-  suffix?: string;
-  unit?: string;
-  note?: string;
+  /** One number, or the two sides of a score. */
+  values: readonly number[];
+  /** Where the count starts from (0 unless given). */
+  from?: number;
+  quote?: string;
   line: string;
-  basis: readonly string[];
-  extra?: readonly { label: string; value: string }[];
 }
 
-export const timeUnits = { hours: "घंटे", minutes: "मिनट", seconds: "सेकंड" } as const;
+export const scoreSeparator = "–";
 
-export const factCards: readonly FactCard[] = [
+export const statCards: readonly StatCard[] = [
   {
-    kind: "time",
-    title: "समय",
-    value: 100_000,
-    line: "हर सेकंड एक इंसान गिनें, तो बिना रुके गिनने में इतना समय लगेगा।",
-    basis: [getFact("countTime").basis],
+    kind: "cats",
+    title: words.cats,
+    values: [TOTAL_CATS],
+    line: "इतनी कि गिनते-गिनते पीलू की आँख लग जाए।",
   },
   {
-    kind: "space",
-    title: "जगह",
-    value: 13,
-    unit: "फ़ुटबॉल मैदान",
-    note: "लगभग 92,900 वर्ग मीटर",
-    line: "खुलकर खड़े हों, तो इन्हें इतनी जगह चाहिए।",
-    extra: [
-      { label: "सघन भीड़", value: getFact("spaceDense").display },
-      { label: "बेहद सघन भीड़", value: getFact("spacePacked").display },
-    ],
-    basis: [
-      getFact("spaceLoose").basis,
-      getFact("spaceDense").basis,
-      getFact("spacePacked").basis,
-    ],
+    kind: "chick",
+    title: words.chick,
+    values: [1],
+    line: "क़द छोटा, हौसला बड़ा। नाम, पीलू।",
   },
   {
-    kind: "queue",
-    title: "कतार",
-    value: 50,
-    unit: "किलोमीटर",
-    line: "एक कतार में खड़ा कर दें, तो लाइन इतनी लंबी होगी।",
-    basis: [getFact("queue").basis],
+    kind: "dot",
+    title: words.redDot,
+    values: [1],
+    line: "पीलू का ब्रह्मास्त्र। न शोर, न धमाका, बस एक बिंदी।",
   },
   {
-    kind: "buses",
-    title: "बसें",
-    value: 2_000,
-    unit: "बसें",
-    line: "और इन सबको ले जाने के लिए इतनी बसें चाहिए।",
-    basis: [getFact("buses").basis],
+    kind: "call",
+    title: MOTHER_CALL,
+    values: [1],
+    quote: MOTHER_QUOTE,
+    line: "लड़ाई रुक सकती है, माँ का फ़ोन नहीं।",
   },
   {
-    kind: "stadium",
-    title: "स्टेडियम",
-    value: 76,
-    prefix: "लगभग",
-    suffix: "%",
-    note: "तीन-चौथाई",
-    line: "दुनिया का सबसे बड़ा क्रिकेट स्टेडियम भी इनसे इतना भर जाएगा।",
-    basis: [getFact("stadium").basis],
+    kind: "left",
+    title: "बची हुई बिल्लियाँ",
+    values: [0],
+    from: TOTAL_CATS,
+    line: "सब की सब लाल बिंदी के पीछे भाग गईं।",
   },
   {
-    kind: "india",
-    title: "भारत",
-    value: 14_766,
-    prefix: "लगभग",
-    unit: "गुना",
-    note: "क़रीब पौने पंद्रह हज़ार",
-    line: "भारत में एक लाख की ऐसी भीड़ इतनी बार समा जाती है।",
-    basis: [getFact("india").basis],
+    kind: "score",
+    title: "अंतिम स्कोर",
+    values: [1, 0],
+    line: "पीलू एक, बिल्लियाँ शून्य। अगला मैच, टीम के साथ।",
   },
 ];
 
@@ -293,65 +249,65 @@ export interface Scene {
 export const scenes: readonly Scene[] = [
   {
     n: 1,
-    title: "सवाल",
-    line: "एक लाख। सुनने में बस एक संख्या है। पर एक लाख लोग असल में कितने होते हैं?",
+    title: "शीर्षक",
+    line: "एक तरफ़, एक नन्हा चूज़ा। नाम, पीलू। दूसरी तरफ़, एक लाख बिल्लियाँ।",
     image: "/s1.jpg",
   },
   {
     n: 2,
-    title: "गिनती",
-    line: "चलिए, गिनकर देखते हैं। एक इंसान। दस। सौ। हज़ार। दस हज़ार। और अब, पूरे एक लाख।",
+    title: "पहली बिल्ली",
+    line: "शुरुआत हुई एक बिल्ली से। पीलू ने बस पलक झपकाई, और बिल्ली फिसल गई।",
     image: "/s2.jpg",
   },
   {
     n: 3,
-    title: "समय",
-    line: "अगर आप हर सेकंड एक इंसान गिनें, तो बिना रुके गिनने में भी सत्ताईस घंटे से ज़्यादा लग जाएँगे।",
+    title: "पाँच और सौ",
+    line: "फिर आईं पाँच। फिर सौ। पीलू अब भी मुस्कुरा रहा था।",
     image: "/s3.jpg",
   },
   {
     n: 4,
-    title: "जगह",
-    line: "खुलकर खड़े हों, तो इन्हें तेरह फ़ुटबॉल मैदान जितनी जगह चाहिए। सटकर खड़े हों, तब भी क़रीब छह।",
+    title: "दस हज़ार",
+    line: "दस हज़ार पर, पीलू दब गया।",
     image: "/s4.jpg",
   },
   {
     n: 5,
-    title: "कतार और बसें",
-    line: "एक कतार में खड़ा कर दें, तो लाइन पचास किलोमीटर लंबी होगी। और इन्हें ले जाने के लिए चाहिए दो हज़ार बसें।",
+    title: MOTHER_CALL,
+    line: `उधर मुर्गी माँ का फ़ोन आया। ${MOTHER_QUOTE}`,
     image: "/s5.jpg",
   },
   {
     n: 6,
-    title: "स्टेडियम",
-    line: "दुनिया का सबसे बड़ा क्रिकेट स्टेडियम भी इनसे तीन-चौथाई भर जाएगा।",
+    title: "एक लाख",
+    line: "एक लाख पर, पीलू के पास खड़े होने की जगह भी नहीं बची।",
     image: "/s6.jpg",
   },
   {
     n: 7,
-    title: "भारत",
-    line: "और भारत? यहाँ ऐसी एक लाख की भीड़, क़रीब पौने पंद्रह हज़ार बार समा जाती है।",
+    title: RED_DOT,
+    line: "तभी पीलू ने निकाला अपना ब्रह्मास्त्र। एक छोटी-सी लाल बिंदी। और एक लाख बिल्लियाँ, उसके पीछे भाग गईं।",
     image: "/s7.jpg",
   },
   {
     n: 8,
-    title: "ज़िंदगियाँ",
-    line: "तो अगली बार जब कोई कहे \"एक लाख\", याद रखिए: यह सिर्फ़ एक संख्या नहीं। एक लाख ज़िंदगियाँ हैं।",
+    title: "जीत और न्योता",
+    line: "लो, पीलू जीत गया। पर अगली बार उसे टीम चाहिए। इस रील का हर व्यू, टीम पीलू में एक नया चूज़ा। तो बताइए, आप आ रहे हैं?",
     image: "/s8.jpg",
   },
 ];
 
 export const story = {
   eyebrow: "SCENE BY SCENE",
-  heading: "रील के आठ दृश्य",
+  heading: "लड़ाई के आठ दृश्य",
   sceneWord: "दृश्य",
-  stripLabel: "रील के आठ दृश्य, दाएँ-बाएँ स्क्रॉल करें",
+  stripLabel: "लड़ाई के आठ दृश्य, दाएँ-बाएँ स्क्रॉल करें",
   prev: "पिछला दृश्य",
   next: "अगला दृश्य",
   progressLabel: "दृश्य",
 } as const;
 
-export type MakingIcon = "idea" | "facts" | "code" | "audio" | "web";
+export type MakingIcon = "idea" | "cast" | "code" | "audio" | "web";
 
 export interface MakingStep {
   icon: MakingIcon;
@@ -365,18 +321,18 @@ export const making = {
   steps: [
     {
       icon: "idea",
-      title: "संदर्भ से विचार तक",
-      body: "एक वायरल रील के \"एक बनाम एक लाख\" वाले विचार से शुरुआत हुई; हमने उसे तथ्यों पर टिकी एक नई कहानी में बदला।",
+      title: "विचार",
+      body: "एक वायरल रील के \"एक बनाम एक लाख\" वाले ढाँचे से प्रेरणा ली, और उसे अपने किरदारों के साथ नई कहानी बनाया: एक चूज़ा, एक लाख बिल्लियाँ।",
     },
     {
-      icon: "facts",
-      title: "तथ्य और गणना",
-      body: "हर आँकड़ा सार्वजनिक स्रोतों से जाँचा गया और हर तुलना के साथ उसकी मान्यता लिखी गई।",
+      icon: "cast",
+      title: CAST_WORD,
+      body: "पीलू, बिल्लियाँ और मुर्गी माँ, तीनों Velto Studios के अपने बनाए किरदार हैं।",
     },
     {
       icon: "code",
       title: "कोड से बने दृश्य",
-      body: "रील का हर फ़्रेम कोड से बनाया गया है (Python, Cairo, NumPy, OpenCV)। स्क्रीन पर दिखने वाले एक लाख बिंदु सचमुच एक लाख हैं।",
+      body: "रील का हर फ़्रेम कोड से बनाया गया है (Python, Cairo, NumPy, OpenCV)। एक लाख वाले दृश्य में बिल्लियाँ सचमुच एक लाख हैं।",
     },
     {
       icon: "audio",
@@ -391,42 +347,42 @@ export const making = {
   ] satisfies MakingStep[],
 } as const;
 
-export interface Source {
-  label: string;
-  href: string;
+export type CastKey = "peelu" | "cats" | "hen";
+
+export interface CastMember {
+  key: CastKey;
+  name: string;
+  line: string;
 }
 
-export const sourcesBlock = {
-  heading: "स्रोत और गणना",
-  tableLabel: "आठ तथ्य और उनका आधार",
-  columns: { fact: "तथ्य", figure: "आँकड़ा", basis: "आधार" },
-  note: "ये अनुमान हैं, सटीक गिनती नहीं। भीड़ की घनता जगह और मौक़े के हिसाब से बदलती है।",
-  listLabel: "स्रोत",
-  sources: [
+export const cast = {
+  eyebrow: "THE CAST",
+  heading: CAST_WORD,
+  members: [
     {
-      label: "FIFA Football Stadiums Guidelines, pitch dimensions",
-      href: "https://publications.fifa.com/en/football-stadiums-guidelines/technical-guideline/stadium-guidelines/pitch-dimensions-and-surrounding-areas",
+      key: "peelu",
+      name: words.peelu,
+      line: "नन्हा, पीला और बिलकुल निडर। जेब में हमेशा एक लाल बिंदी रखता है।",
     },
     {
-      label: "ICC venue page, stadium capacity",
-      href: "https://www.icc-cricket.com/tournaments/mens-t20-world-cup-2026/venues/icc-men-s-t20-world-cup-2026-narendra-modi-stadium",
+      key: "cats",
+      name: "बिल्ली गैंग",
+      line: "गिनती में पूरी एक लाख। लाल बिंदी दिखते ही बाक़ी सब भूल जाती हैं।",
     },
     {
-      label: "Columbia Journalism Review, how crowd sizes are estimated (Jacobs method)",
-      href: "https://www.cjr.org/analysis/how-many-marched-protests-hong-kong-how-guess-crowd-size.php",
+      key: "hen",
+      name: "मुर्गी माँ",
+      line: "लड़ाई कितनी भी बड़ी हो, खाने का पूछना कभी नहीं भूलतीं।",
     },
-    {
-      label: "StatisticsTimes, India demographics (UN WPP 2024)",
-      href: "https://statisticstimes.com/demographics/country/india-demographics.php",
-    },
-  ] satisfies Source[],
+  ] satisfies CastMember[],
 } as const;
 
 export const closing = {
-  eyebrow: "ONE LAKH LIVES",
-  lines: ["यह सिर्फ़ एक संख्या नहीं।", "एक लाख ज़िंदगियाँ हैं।"],
-  watch: "रील देखें",
+  eyebrow: "PEELU 1 – 0 CATS",
+  lines: ["पीलू जीत गया।", "अगली बार, टीम के साथ।"],
+  watch: WATCH_REEL,
   share: "शेयर करें",
+  shareText: `${TITLE}: हर व्यू, टीम पीलू में एक नया चूज़ा।`,
   follow: "Instagram पर फ़ॉलो करें",
   copied: "लिंक कॉपी हो गया",
   copyFailed: "लिंक कॉपी नहीं हो सका। ऊपर पता बार से कॉपी कर लें।",

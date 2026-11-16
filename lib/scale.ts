@@ -1,71 +1,40 @@
 /**
- * The arithmetic behind the scale explorer.
- * Every figure the explorer shows is derived from these constants.
+ * The cat army behind the field explorer: how many cats each step shows,
+ * where every cat stands and which coat it wears.
  */
 
-export const SQFT_IN_SQM = 0.09290304;
-export const TOTAL_PEOPLE = 100_000;
+export const TOTAL_CATS = 100_000;
 
-export const COUNT_STEPS = [1, 10, 100, 1_000, 10_000, 100_000] as const;
+export const COUNT_STEPS = [1, 5, 100, 10_000, 100_000] as const;
 export type CountStep = (typeof COUNT_STEPS)[number];
 
-/** Football pitch, in metres. Length and width follow the FIFA recommended size. */
-export const PITCH = {
-  length: 105,
-  width: 68,
-  area: 105 * 68,
-  centreCircleRadius: 9.15,
-  penaltyDepth: 16.5,
-  penaltyWidth: 40.32,
-} as const;
+/** Coat colours, with how common each one is in the army (weights add up to 1). */
+export const COATS = [
+  { key: "grey", hex: "#8E939D", weight: 0.3 },
+  { key: "ginger", hex: "#DB873A", weight: 0.24 },
+  { key: "black", hex: "#3E3F49", weight: 0.14 },
+  { key: "white", hex: "#F1EDE6", weight: 0.14 },
+  { key: "tabby", hex: "#8F6B4A", weight: 0.18 },
+] as const;
 
-export type DensityKey = "loose" | "dense" | "packed";
+export type CoatKey = (typeof COATS)[number]["key"];
 
-export interface Density {
-  key: DensityKey;
-  /** Area per person in square feet (Jacobs method). */
-  sqft: number;
-  /** Area per person in square metres. */
-  area: number;
-  /** Distance between neighbours on a square grid, in metres. */
-  spacing: number;
+export function coatHex(key: CoatKey): string {
+  return COATS.find((coat) => coat.key === key)?.hex ?? COATS[0].hex;
 }
 
-function density(key: DensityKey, sqft: number): Density {
-  const area = sqft * SQFT_IN_SQM;
-  return { key, sqft, area, spacing: Math.sqrt(area) };
+/** "#RRGGBB" -> three sRGB components in [0, 1]. */
+export function hexToRgb(hex: string): [number, number, number] {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return [((value >> 16) & 255) / 255, ((value >> 8) & 255) / 255, (value & 255) / 255];
 }
 
-export const DENSITIES: readonly Density[] = [
-  density("loose", 10),
-  density("dense", 4.5),
-  density("packed", 2.5),
-];
-
-export function getDensity(key: DensityKey): Density {
-  return DENSITIES.find((item) => item.key === key) ?? DENSITIES[0];
-}
-
-/** Ground area a crowd needs, in square metres. */
-export function crowdArea(count: number, d: Density): number {
-  return count * d.area;
-}
-
-export function pitchEquivalent(areaSqm: number): number {
-  return areaSqm / PITCH.area;
-}
-
-/** Side of the square block a crowd forms, in metres. */
-export function blockSide(count: number, spacing: number): number {
-  return Math.sqrt(count) * spacing;
-}
-
-/** How many pitches (columns along the length, rows along the width) cover a square block. */
-export function pitchTiling(side: number): { cols: number; rows: number } {
-  return {
-    cols: Math.max(1, Math.ceil(side / PITCH.length)),
-    rows: Math.max(1, Math.ceil(side / PITCH.width)),
-  };
+/**
+ * Half the side of the square block that `count` cats form around Peelu, in
+ * grid cells: the cats plus Peelu's own cell, measured to the cells' outer edge.
+ */
+export function blockHalfSide(count: number): number {
+  return Math.sqrt(count + 1) / 2 + 0.5;
 }
 
 /** Small seeded PRNG so generated layouts are identical on every run. */
@@ -80,36 +49,39 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-export interface CrowdLayout {
-  /** xyz triples in grid units (multiply x and z by the spacing to get metres). */
+export interface CatLayout {
+  /** xyz triples in grid cells; Peelu stands on the origin, which no cat occupies. */
   positions: Float32Array;
-  /** One value in [0, 1) per person, used for brightness variation. */
+  /** Two independent values in [0, 1) per cat: its brightness and its place in the chase. */
   seeds: Float32Array;
+  /** rgb triples in [0, 1]: the coat of each cat. */
+  colors: Float32Array;
 }
 
-const JITTER = 0.56;
+const JITTER = 0.5;
 
 /**
- * Places `total` people on a jittered square grid, ordered ring by ring outwards
- * from the origin. Any prefix of the list is therefore a compact, near-square
- * block centred on the origin, which lets the renderer reveal 1, 10, 100 ...
- * people just by changing the draw range.
+ * Places `total` cats on a jittered square grid, ordered ring by ring outwards
+ * from Peelu at the origin. Any prefix of the list is therefore a compact,
+ * near-square block centred on him, which lets the renderer reveal 1, 5, 100 ...
+ * cats just by changing the draw range.
  */
-export function buildCrowdLayout(total: number = TOTAL_PEOPLE, seed = 100_000): CrowdLayout {
+export function buildCatLayout(total: number = TOTAL_CATS, seed = 100_000): CatLayout {
   const random = mulberry32(seed);
   const positions = new Float32Array(total * 3);
-  const seeds = new Float32Array(total);
+  const seeds = new Float32Array(total * 2);
+  const colors = new Float32Array(total * 3);
+  const palette = COATS.map((coat) => hexToRgb(coat.hex));
   let placed = 0;
 
-  const place = (cellX: number, cellZ: number, jitter: number) => {
-    positions[placed * 3] = cellX + (random() - 0.5) * jitter;
-    positions[placed * 3 + 1] = 0;
-    positions[placed * 3 + 2] = cellZ + (random() - 0.5) * jitter;
-    seeds[placed] = random();
-    placed += 1;
+  const pickCoat = (): [number, number, number] => {
+    let roll = random();
+    for (let index = 0; index < COATS.length; index += 1) {
+      roll -= COATS[index].weight;
+      if (roll < 0) return palette[index];
+    }
+    return palette[0];
   };
-
-  if (total > 0) place(0, 0, 0);
 
   for (let ring = 1; placed < total; ring += 1) {
     const cells: number[] = [];
@@ -129,62 +101,18 @@ export function buildCrowdLayout(total: number = TOTAL_PEOPLE, seed = 100_000): 
     }
 
     for (let c = 0; c < size && placed < total; c += 1) {
-      place(cells[c * 2], cells[c * 2 + 1], JITTER);
+      positions[placed * 3] = cells[c * 2] + (random() - 0.5) * JITTER;
+      positions[placed * 3 + 1] = 0;
+      positions[placed * 3 + 2] = cells[c * 2 + 1] + (random() - 0.5) * JITTER;
+      seeds[placed * 2] = random();
+      seeds[placed * 2 + 1] = random();
+      const [r, g, b] = pickCoat();
+      colors[placed * 3] = r;
+      colors[placed * 3 + 1] = g;
+      colors[placed * 3 + 2] = b;
+      placed += 1;
     }
   }
 
-  return { positions, seeds };
-}
-
-/**
- * Line segments (xyz pairs, metres) for a cols × rows sheet of pitches centred
- * on the origin: touchlines, halfway line, centre circle and penalty areas.
- */
-export function buildPitchLines(cols: number, rows: number, circleSegments = 48): Float32Array {
-  const out: number[] = [];
-  const segment = (x1: number, z1: number, x2: number, z2: number) => {
-    out.push(x1, 0, z1, x2, 0, z2);
-  };
-
-  const { length, width, centreCircleRadius, penaltyDepth, penaltyWidth } = PITCH;
-  const originX = -(cols * length) / 2;
-  const originZ = -(rows * width) / 2;
-  const halfBox = penaltyWidth / 2;
-
-  for (let col = 0; col < cols; col += 1) {
-    for (let row = 0; row < rows; row += 1) {
-      const left = originX + col * length;
-      const right = left + length;
-      const top = originZ + row * width;
-      const bottom = top + width;
-      const cx = left + length / 2;
-      const cz = top + width / 2;
-
-      segment(left, top, right, top);
-      segment(right, top, right, bottom);
-      segment(right, bottom, left, bottom);
-      segment(left, bottom, left, top);
-      segment(cx, top, cx, bottom);
-
-      for (let s = 0; s < circleSegments; s += 1) {
-        const a0 = (s / circleSegments) * Math.PI * 2;
-        const a1 = ((s + 1) / circleSegments) * Math.PI * 2;
-        segment(
-          cx + Math.cos(a0) * centreCircleRadius,
-          cz + Math.sin(a0) * centreCircleRadius,
-          cx + Math.cos(a1) * centreCircleRadius,
-          cz + Math.sin(a1) * centreCircleRadius,
-        );
-      }
-
-      segment(left, cz - halfBox, left + penaltyDepth, cz - halfBox);
-      segment(left + penaltyDepth, cz - halfBox, left + penaltyDepth, cz + halfBox);
-      segment(left + penaltyDepth, cz + halfBox, left, cz + halfBox);
-      segment(right, cz - halfBox, right - penaltyDepth, cz - halfBox);
-      segment(right - penaltyDepth, cz - halfBox, right - penaltyDepth, cz + halfBox);
-      segment(right - penaltyDepth, cz + halfBox, right, cz + halfBox);
-    }
-  }
-
-  return new Float32Array(out);
+  return { positions, seeds, colors };
 }

@@ -1,9 +1,9 @@
 /**
- * Number and time formatting helpers.
+ * Number, date and time formatting helpers.
  * Everything here is deterministic, so server and client output always match.
  */
 
-/** Indian digit grouping: 100000 -> "1,00,000", 14766 -> "14,766". */
+/** Indian digit grouping: 100000 -> "1,00,000", 10000 -> "10,000". */
 export function formatIN(value: number, fractionDigits = 0): string {
   const fixed = Math.abs(value).toFixed(fractionDigits);
   const [whole = "0", fraction] = fixed.split(".");
@@ -14,24 +14,6 @@ export function formatIN(value: number, fractionDigits = 0): string {
   }
   const sign = value < 0 ? "-" : "";
   return fraction ? `${sign}${grouped}.${fraction}` : `${sign}${grouped}`;
-}
-
-/** Rounds to a number of significant digits without floating point noise. */
-export function roundSig(value: number, digits = 3): number {
-  if (value === 0 || !Number.isFinite(value)) return 0;
-  const exponent = Math.floor(Math.log10(Math.abs(value))) - (digits - 1);
-  if (exponent >= 0) {
-    const factor = 10 ** exponent;
-    return Math.round(value / factor) * factor;
-  }
-  const factor = 10 ** -exponent;
-  return Math.round(value * factor) / factor;
-}
-
-/** An honest approximation: three significant digits, at most one decimal. */
-export function formatApprox(value: number): string {
-  const rounded = roundSig(value, 3);
-  return rounded >= 100 ? formatIN(Math.round(rounded)) : formatIN(rounded, 1);
 }
 
 export function pad2(value: number): string {
@@ -45,17 +27,17 @@ export function formatClock(totalSeconds: number): string {
   return `${Math.floor(whole / 60)}:${pad2(whole % 60)}`;
 }
 
-export function splitDuration(totalSeconds: number): {
-  hours: number;
-  minutes: number;
-  seconds: number;
-} {
-  const whole = Math.max(0, Math.round(totalSeconds));
-  return {
-    hours: Math.floor(whole / 3600),
-    minutes: Math.floor((whole % 3600) / 60),
-    seconds: whole % 60,
-  };
+/**
+ * "2026-11-16" -> "16 नवंबर 2026", using the twelve month names passed in.
+ * The string is split by hand (no Date, no Intl), so the result never depends
+ * on the time zone or locale data of whichever machine renders it.
+ */
+export function formatDateHi(iso: string, months: readonly string[]): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return iso;
+  const month = months[Number(match[2]) - 1];
+  if (!month) return iso;
+  return `${Number(match[3])} ${month} ${match[1]}`;
 }
 
 export function clamp(value: number, min: number, max: number): number {
