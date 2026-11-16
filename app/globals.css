@@ -8,6 +8,7 @@
   --color-dim: #9a9da6;
   --color-crimson: #c8102e;
   --color-caption: #ffd23f;
+  --color-butter: #ffd23f;
   --color-warm: #f6ead8;
 
   --font-sans: "Mukta", "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI",
@@ -317,6 +318,25 @@
     }
   }
 
+  /* The red dot that follows a desktop pointer across the hero. It sits above
+     the scrims and below the copy; the canvas script moves it and fades it. */
+  .hero-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    width: 0.625rem;
+    height: 0.625rem;
+    margin: -0.3125rem 0 0 -0.3125rem;
+    background: var(--color-crimson);
+    box-shadow:
+      0 0 0.9rem 0.2rem rgb(200 16 46 / 0.55),
+      0 0 2.75rem 0.9rem rgb(200 16 46 / 0.2);
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+
   /* Reel player */
   .reel-shell {
     position: relative;
@@ -408,7 +428,69 @@
     background-size: 14px 14px;
   }
 
-  /* Scale explorer */
+  /* Team Peelu: the flock stands on one line and wraps upwards as it grows. */
+  .flock {
+    --chick: 2.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    align-items: flex-end;
+    gap: calc(var(--chick) * 0.16);
+  }
+
+  .flock[data-size="md"] {
+    --chick: 1.9rem;
+  }
+
+  .flock[data-size="sm"] {
+    --chick: 1.3rem;
+  }
+
+  .flock-chick {
+    width: var(--chick);
+    height: var(--chick);
+    flex: none;
+  }
+
+  /* A little variety: some chicks lean, some face the other way. */
+  .flock > .flock-chick:nth-child(5n + 3) {
+    transform: rotate(-7deg);
+  }
+
+  .flock > .flock-chick:nth-child(4n + 2) {
+    transform: scaleX(-1);
+  }
+
+  .flock > .flock-chick:nth-child(7n + 5) {
+    transform: rotate(6deg);
+  }
+
+  .flock-peelu {
+    width: calc(var(--chick) * 1.4);
+    height: calc(var(--chick) * 1.4);
+  }
+
+  .flock-tag {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.4rem;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 999px;
+    padding: 0.2rem 0.8rem 0.2rem 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .hop-in {
+    transform-origin: 50% 100%;
+    animation: hop-in 0.95s var(--ease-soft) both;
+  }
+
+  /* The field */
   .stage {
     background:
       radial-gradient(
@@ -458,7 +540,38 @@
     color: var(--color-charcoal);
   }
 
-  /* Fact cards: a very slight tilt towards the pointer, desktop only. */
+  /* The red dot's switch: its little square lights up while the dot is out. */
+  .dot-switch-mark {
+    flex: none;
+    width: 0.7rem;
+    height: 0.7rem;
+    background: var(--color-crimson);
+    opacity: 0.55;
+    transition:
+      opacity 0.25s var(--ease-soft),
+      box-shadow 0.25s var(--ease-soft);
+  }
+
+  .dot-switch[aria-pressed="true"] {
+    border-color: var(--color-crimson);
+    background: color-mix(in srgb, var(--color-crimson) 16%, transparent);
+  }
+
+  .dot-switch[aria-pressed="true"] .dot-switch-mark {
+    opacity: 1;
+    box-shadow: 0 0 0.8rem 0.15rem rgb(200 16 46 / 0.6);
+  }
+
+  /* Static fallback: the crowd slides off after the dot. */
+  .fallback-crowd {
+    transition: transform 1.4s var(--ease-soft);
+  }
+
+  .fallback-dot {
+    transition: opacity 0.35s var(--ease-soft);
+  }
+
+  /* Stat cards: a very slight tilt towards the pointer, desktop only. */
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     .tilt {
       transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
@@ -553,6 +666,31 @@
   55%,
   100% {
     transform: translateY(100%);
+  }
+}
+
+@keyframes hop-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -170%, 0) scale(0.8, 1.12);
+  }
+
+  42% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.1, 0.84);
+  }
+
+  62% {
+    transform: translate3d(0, -32%, 0) scale(0.97, 1.05);
+  }
+
+  82% {
+    transform: translate3d(0, 0, 0) scale(1.04, 0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1, 1);
   }
 }
 

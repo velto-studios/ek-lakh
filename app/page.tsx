@@ -6,6 +6,7 @@ import { Providers } from "@/components/Providers";
 import { ReelSection } from "@/components/ReelSection";
 import { ScaleSection } from "@/components/ScaleSection";
 import { StorySection } from "@/components/StorySection";
+import { TeamSection } from "@/components/TeamSection";
 import { TopBar } from "@/components/TopBar";
 import { site } from "@/lib/content";
 
@@ -22,6 +23,7 @@ export default function Page() {
       <main id="main">
         <Hero />
         <ReelSection />
+        <TeamSection />
         <ScaleSection />
         <StorySection />
         <MakingSection />
