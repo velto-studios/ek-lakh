@@ -30,21 +30,21 @@ Times are estimated between sampled frames.
 
 ## What we did not carry over, and why
 
-The reference stages a fight between real, named politicians. Velto's version uses no real people, no parties and no fight. The reference also contains no facts to check, so it could not support a documentary treatment as it stood.
+The reference stages a fight between real, named politicians. Velto's version uses no real people, no parties and no nicknames that point at them.
 
 ## What we kept
 
-The single idea that makes it watchable: **what one lakh people look like, shown by a counter that climbs by powers of ten while the camera pulls back.**
+The whole structure, beat for beat: one small hero against a clone army that grows 1, 5, 100, 10,000, 1,00,000 under a live counter; he is buried; a cutaway gag; no room left to stand; one move that clears the field; a victory line and a score.
 
-## Improvements in the Velto version
+## The Velto version: पीलू vs 1 लाख बिल्लियाँ
 
-1. A real question with a real answer: how big is one lakh?
-2. Every number is computed from a stated assumption and a public source.
-3. The crowd is exactly 1,00,000 drawn people, not an impression of one.
-4. Hindi narration by a male voice, with word-timed Hindi subtitles.
-5. Six comparisons instead of one gag: counting time, ground area, a queue, buses, a stadium, India.
-6. The counter climbs in clean powers of ten, each with its own bell note.
-7. One visual language from start to finish (night stage, warm crowd, mono numerals).
-8. Assumptions shown on screen beside each claim.
-9. A closing thought that returns from the number to people.
-10. A companion website where the viewer can run the count themselves in 3D.
+1. An original cast: Peelu the chick, the cat gang and Murgi Maa.
+2. A real joke at each beat instead of a caption describing the fight (the blink, the phone call, the one-foot balance, the red dot).
+3. Nobody gets hurt: the cats run after a red dot.
+4. The red dot is the crimson pixel from Velto's logo, and it becomes that pixel on the end card.
+5. Hindi narration by a male voice with word-timed Hindi subtitles.
+6. Drawn characters with expressions and squash-and-stretch instead of stiff low-poly figures.
+7. The one-lakh shot holds exactly 1,00,000 drawn cats.
+8. The counter runs back down to zero in the comeback.
+9. An invitation that gives viewers a part: every view adds a chick to Team Peelu.
+10. A companion site with the team count and a 3D field where the visitor can show the red dot to the cats.
